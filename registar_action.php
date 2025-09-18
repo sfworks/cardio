@@ -19,6 +19,19 @@ if ($password !== $confirm_password) {
     exit;
 }
 
+// Verificar se o email ou telefone já existem
+$stmt_check = $db->prepare("SELECT registo_id FROM registo WHERE email = ? OR telefone = ?");
+$stmt_check->bind_param("ss", $email, $telefone);
+$stmt_check->execute();
+$result_check = $stmt_check->get_result();
+
+if ($result_check->num_rows > 0) {
+    $_SESSION['msg_insert'] = "<div class='alert alert-danger'>O email ou telefone já está registado.</div>";
+    header('Location: participante_registar.php');
+    exit;
+}
+$stmt_check->close();
+
 // Verificar especialidade se aplicável
 $especialidade_especialista = isset($_POST['especialidade_especialista']) ? $_POST['especialidade_especialista'] : '';
 $especialidade_residente = isset($_POST['especialidade_residente']) ? $_POST['especialidade_residente'] : '';
