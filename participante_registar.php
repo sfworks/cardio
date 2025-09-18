@@ -46,7 +46,7 @@ if(isset($_SESSION['msg_insert']))
       <h5 class="card-title">Registo de entrada</h5> <span></span>
 
       <!-- Floating Labels Form -->
-      <form action="insert_registo.php" method="POST">
+      <form action="registar_action.php" method="POST" enctype="multipart/form-data">
 
       <div class="row">
         <div class="col">
@@ -104,6 +104,31 @@ if(isset($_SESSION['msg_insert']))
               <input type="email" name="email" value="<?=$email?>" class="form-control" required>
                <label class="form-label">E-mail</label>
             </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="mb-3">
+               <div class="form-floating">
+              <input type="password" name="password" class="form-control" required>
+               <label class="form-label">Password</label>
+            </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="mb-3">
+               <div class="form-floating">
+              <input type="password" name="confirm_password" class="form-control" required>
+               <label class="form-label">Confirmar Password</label>
+            </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="mb-3">
+              <label for="formFile" class="form-label">Comprovativo de Pagamento</label>
+              <input class="form-control" type="file" name="comprovativo" id="formFile" required>
             </div>
           </div>
 

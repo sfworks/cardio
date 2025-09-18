@@ -1,82 +1,51 @@
 <?php
-
 session_start();
- ob_start();
-  $_SESSION["timeout"] = time();
-    if(time() - $_SESSION["timeout"] > 100)
-    {
-     unset($_SESSION["timeout"]);
+require_once('dbconnect.php');
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = $_POST['username']; // The form uses 'username' for the email field
+    $password = $_POST['password'];
+
+    if (empty($email) || empty($password)) {
+        $_SESSION['msg_erro'] = "Por favor, preencha todos os campos.";
+        header("LOCATION: login.php");
+        exit;
     }
 
+    $stmt = $db->prepare("SELECT registo_id, nome, password, unique_id FROM registo WHERE email = ?");
+    if ($stmt === false) {
+        // Handle error, maybe log it
+        $_SESSION['msg_erro'] = "Erro no sistema, por favor tente mais tarde.";
+        header("LOCATION: login.php");
+        exit;
+    }
 
-include 'dbconnect.php';
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
 
-$msg="";
+    if ($user && password_verify($password, $user['password'])) {
+        // Password is correct, start a new session
+        session_regenerate_id();
+        $_SESSION['login'] = true;
+        $_SESSION['cardio_userid'] = $user['registo_id'];
+        $_SESSION['cardio_user_name'] = $user['nome'];
+        $_SESSION['cardio_user_unique_id'] = $user['unique_id'];
 
+        header("location: dashboard.php");
+        exit;
+    } else {
+        // Invalid credentials
+        $_SESSION['msg_erro'] = "Credenciais inválidas. Tente novamente.";
+        header("LOCATION: login.php");
+        exit;
+    }
 
-// inicializa variaveis de login
-
-
-	  $username = $_POST['username'];
-	  $password = $_POST['password'];
-	
-
-
-
-	try{
-
-
-
-            $sql = "SELECT utilizador_id, utilizador_nome, perfil,  username, password from utilizador
-			
-		
-                 WHERE username ='$username' AND password ='$password'";
-              $query = mysqli_query($db, "$sql");
-              $result = $db->query($sql);
-
-              while ($row = mysqli_fetch_array($query))
-
-            if (!empty($row['username']))
-            {
-						$userN= $row['username'];
-						$userP= $row['password'];
-						$user_id= $row['utilizador_id'];
-						$user_nome= $row['utilizador_nome'];
-						$user_perfil= $row['perfil'];
-						
-
-//echo $user_provincia_nome;
+    $stmt->close();
+} else {
+    // Not a POST request
+    header("LOCATION: login.php");
+    exit;
 }
-
-
-} catch(Exception $e)
-		   {
-		   echo $e->getMessage();
-		   }
-
-	 if($username === $userN && $password === $userP)
-	  {
-
-		$_SESSION['login'] = true;
-
-	// Cria sessao do perfil e User ID e nome do utilizador
-						$_SESSION['cardio_userid'] = $user_id;
-						$_SESSION['cardio_usernome'] = $user_nome;
-						$_SESSION['cardio_userperfil'] = $user_perfil;
-					
-
-            header("location: participante_registar.php?");
-       }else
-         {
-         echo "<script>alert('A conta não é válida, tente novamente')</script>";
-         $_SESSION['msg_erro'] ="Erro de credenciais! Tente novamente ";
-   		  header("LOCATION:login.php?");
-         }
-
-
-
-
-
-
-
 ?>
